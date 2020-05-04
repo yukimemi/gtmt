@@ -11,6 +11,7 @@
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^2",
+    "puppeteer": "^3.0.2",
     "tslib": "^1"
   },
   "devDependencies": {
@@ -19,6 +20,7 @@
     "@types/chai": "^4",
     "@types/mocha": "^5",
     "@types/node": "^10",
+    "@types/puppeteer": "^2.0.1",
     "chai": "^4",
     "eslint": "^5.13",
     "eslint-config-oclif": "^3.1",
@@ -49,7 +51,12 @@
     "posttest": "eslint . --ext .ts --config .eslintrc",
     "prepack": "rm -rf lib && tsc -b && oclif-dev readme",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
+    "watch": "watchexec -w src -w test -e ts,js,json -- nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
     "version": "oclif-dev readme && git add README.md"
   },
-  "types": "lib/index.d.ts"
+  "types": "lib/index.d.ts",
+  "prettier": {
+    "semi": true,
+    "singleQuote": false
+  }
 }

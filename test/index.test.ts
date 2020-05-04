@@ -6,14 +6,16 @@ describe('gtmt', () => {
   test
   .stdout()
   .do(() => cmd.run([]))
-  .it('runs hello', ctx => {
-    expect(ctx.stdout).to.contain('hello world')
+  .it('runs gtmt', ctx => {
+    expect(ctx.stdout).to.contain('hello')
   })
 
   test
   .stdout()
-  .do(() => cmd.run(['--name', 'jeff']))
-  .it('runs hello --name jeff', ctx => {
-    expect(ctx.stdout).to.contain('hello jeff')
+  .do(() => cmd.run(['--help']))
+  .it('runs gtmt --help', ctx => {
+    console.log(ctx.stdout);
+    expect(ctx.stdout).to.contain('USAGE');
   })
+
 })
