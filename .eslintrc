@@ -1,13 +1,17 @@
 {
-  "extends": ["oclif", "oclif-typescript", "prettier"],
-  "plugins": ["prettier"],
+  "extends": [
+    "oclif",
+    "oclif-typescript",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended",
+    "prettier/@typescript-eslint"
+  ],
+  "plugins": ["simple-import-sort", "import"],
   "rules": {
-    "prettier/prettier": [
-      "error",
-      {
-        "semi": true,
-        "singleQuote": false
-      }
-    ]
+    "simple-import-sort/sort": "error",
+    "sort-imports": "off",
+    "import/first": "error",
+    "import/newline-after-import": "error",
+    "import/no-duplicates": "error"
   }
 }

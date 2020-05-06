@@ -1,5 +1,6 @@
 *-debug.log
 *-error.log
+cookies.json
 /.nyc_output
 /dist
 /lib
