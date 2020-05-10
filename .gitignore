@@ -1,10 +1,11 @@
 *-debug.log
 *-error.log
-cookies.json
+portfolio.json
 /.nyc_output
 /dist
 /lib
 /package-lock.json
-/tmp
 /screenshot
+/tmp
+cookies.json
 node_modules
