@@ -4,6 +4,8 @@ import * as _ from "lodash";
 import * as moment from "moment";
 import * as puppeteer from "puppeteer";
 
+const jq = require("node-jq");
+
 class Gtmt extends Command {
   static description = "Get my portfolio";
 
@@ -77,6 +79,16 @@ class Gtmt extends Command {
     );
 
     return rows.map((row) => _.zipObject(thead, row));
+  }
+
+  async filterDetDepo(fil1: string, fil2: string): Promise<number[]> {
+    return JSON.parse(
+      await jq.run(
+        `[.[].detDepo[] | select(."種類・名称" == "${fil1}" and ."保有金融機関" == "${fil2}") | .balance]`,
+        this.portfolioPath,
+        { input: "file" }
+      )
+    ).map(Number);
   }
 
   async init(): Promise<void> {
@@ -307,6 +319,208 @@ class Gtmt extends Command {
       } else {
         fs.writeFileSync(this.portfolioPath, JSON.stringify([this.portfolio]));
       }
+
+      // const history = JSON.parse(fs.readFileSync(this.portfolioPath, "utf-8"));
+
+      const sbi1 = await this.filterDetDepo(
+        "代表口座 - 円普通",
+        "住信SBIネット銀行"
+      );
+      const sbi2 = await this.filterDetDepo(
+        "SBIハイブリッド預金",
+        "住信SBIネット銀行"
+      );
+      const sbi = _.zipWith(sbi1, sbi2, (a, b) => a + b);
+      console.log({ sbi });
+
+      const smbc = await this.filterDetDepo(
+        "残高別普通預金残高",
+        "三井住友銀行"
+      );
+      console.log({ smbc });
+
+      const ufj = await this.filterDetDepo("普通預金", "三菱UFJ銀行");
+      console.log({ ufj });
+
+      const yucho = await this.filterDetDepo("二二八店 普通", "ゆうちょ銀行");
+      console.log({ yucho });
+
+      const coincheck1 = await this.filterDetDepo(
+        "ビットコイン残高",
+        "coincheck"
+      );
+      const coincheck2 = await this.filterDetDepo("Ripple残高", "coincheck");
+      const coincheck3 = await this.filterDetDepo("Litecoin残高", "coincheck");
+      const coincheck4 = await this.filterDetDepo(
+        "ビットコイン キャッシュ残高",
+        "coincheck"
+      );
+      const coincheck5 = await this.filterDetDepo("円残高", "coincheck");
+      const coincheck = _.zipWith(
+        coincheck1,
+        coincheck2,
+        coincheck3,
+        coincheck4,
+        coincheck5,
+        (a, b, c, d, e) => a + b + c + d + e
+      );
+      console.log({ coincheck });
+
+      const bitbank1 = await this.filterDetDepo("ビットコイン残高", "bitbank");
+      const bitbank2 = await this.filterDetDepo("円残高", "bitbank");
+      const bitbank = _.zipWith(bitbank1, bitbank2, (a, b) => a + b);
+      console.log({ bitbank });
+
+      const btcbox1 = await this.filterDetDepo("BTC残高", "BTCBOX");
+      const btcbox2 = await this.filterDetDepo("JPY残高", "BTCBOX");
+      const btcbox = _.zipWith(btcbox1, btcbox2, (a, b) => a + b);
+      console.log({ btcbox });
+
+      const bitFlyer1 = await this.filterDetDepo(
+        "ビットコイン残高",
+        "bitFlyer"
+      );
+      const bitFlyer2 = await this.filterDetDepo("Mona残高", "bitFlyer");
+      const bitFlyer3 = await this.filterDetDepo("円残高", "bitFlyer");
+      const bitFlyer = _.zipWith(
+        bitFlyer1,
+        bitFlyer2,
+        bitFlyer3,
+        (a, b, c) => a + b + c
+      );
+      console.log(bitFlyer);
+
+      const liquid = await this.filterDetDepo("円残高", "Liquid by Quoine");
+      console.log({ liquid });
+
+      const total = _.zipWith(
+        sbi,
+        smbc,
+        ufj,
+        yucho,
+        coincheck,
+        bitbank,
+        btcbox,
+        bitFlyer,
+        liquid,
+        (x1, x2, x3, x4, x5, x6, x7, x8, x9) =>
+          x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9
+      );
+      console.log({ total });
+
+      const times = JSON.parse(
+        await jq.run("[.[].time]", this.portfolioPath, { input: "file" })
+      );
+
+      // const imgUrl = encodeURI(
+      //   `https://image-charts.com/chart?cht=lc&chxt=x,y&chd=a:${[
+      //     sbi1,
+      //     sbi2,
+      //     smbc,
+      //     ufj,
+      //     yucho,
+      //     coincheck1,
+      //     coincheck2,
+      //     coincheck3,
+      //     coincheck4,
+      //     coincheck5,
+      //     bitbank1,
+      //     bitbank2,
+      //     btcbox1,
+      //     btcbox2,
+      //     bitFlyer1,
+      //     bitFlyer2,
+      //     bitFlyer3,
+      //     liquid,
+      //   ]
+      //     .map((x) => x.join(","))
+      //     .join("|")}&chs=999x999&chco=${[
+      //     "1E90FF",
+      //     "4169E1",
+      //     "32CD32",
+      //     "DC143C",
+      //     "228B22",
+      //     "00FFFF",
+      //     "00BFFF",
+      //     "48D1CC",
+      //     "6495ED",
+      //     "40E0D0",
+      //     "A9A9A9",
+      //     "C0C0C0",
+      //     "FFA500",
+      //     "FFD700",
+      //     "8B008B",
+      //     "8B0000",
+      //     "A52A2A",
+      //     "00008B",
+      //   ].join(",")}&chdl=${[
+      //     "代表口座 - 円普通 (住信SBIネット銀行)",
+      //     "SBIハイブリッド預金 (住信SBIネット銀行)",
+      //     "残高別普通預金残高 (三井住友銀行)",
+      //     "普通預金 (三菱UFJ銀行)",
+      //     "二二八店 普通 (ゆうちょ銀行)",
+      //     "ビットコイン残高 (coincheck)",
+      //     "Ripple残高 (coincheck)",
+      //     "Litecoin残高 (coincheck)",
+      //     "ビットコイン キャッシュ残高 (coincheck)",
+      //     "円残高 (coincheck)",
+      //     "ビットコイン残高 (bitbank)",
+      //     "円残高 (bitbank)",
+      //     "BTC残高 (BTCBOX)",
+      //     "JPY残高 (BTCBOX)",
+      //     "ビットコイン残高 (bitFlyer)",
+      //     "Mona残高 (bitFlyer)",
+      //     "円残高 (bitFlyer)",
+      //     "円残高 (Liquid by Quoine)",
+      //   ].join("|")}`
+      // );
+
+      const imgUrl = encodeURI(
+        `https://image-charts.com/chart?cht=bvs&chxt=x,y&chd=a:${[
+          sbi,
+          smbc,
+          ufj,
+          yucho,
+          coincheck,
+          bitbank,
+          btcbox,
+          bitFlyer,
+          liquid,
+        ]
+          .map((x) => x.join(","))
+          .join("|")}&chs=999x999&chco=${[
+          "1E90FF",
+          "32CD32",
+          "DC143C",
+          "228B22",
+          "00FFFF",
+          "A9A9A9",
+          "FFA500",
+          "8B008B",
+          "00008B",
+        ].join(",")}&chdl=${[
+          "住信SBIネット銀行",
+          "三井住友銀行",
+          "三菱UFJ銀行",
+          "ゆうちょ銀行",
+          "coincheck",
+          "bitbank",
+          "BTCBOX",
+          "bitFlyer",
+          "Liquid by Quoine",
+        ].join("|")}&chl=${total.join("|")}`
+      );
+
+      console.log(imgUrl);
+
+      await this.page.goto(imgUrl, {
+        waitUntil: ["load", "networkidle2"],
+      });
+
+      await this.page.screenshot({
+        path: "screenshot/portfolio.png",
+        fullPage: true,
+      });
 
       await this.browser.close();
     } catch (error) {
