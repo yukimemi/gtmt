@@ -1,4 +1,5 @@
 import { Command, flags } from "@oclif/command";
+import { WebClient } from "@slack/web-api";
 import * as fs from "fs";
 import * as _ from "lodash";
 import * as moment from "moment";
@@ -28,6 +29,8 @@ class Gtmt extends Command {
   moneyforwardEmail = process.env.MONEYFORWARD_EMAIL;
 
   moneyforwardPass = process.env.MONEYFORWARD_PASS;
+
+  slackToken = process.env.GTMT_SLACK_TOKEN;
 
   cookiesPath = "cookies.json";
 
@@ -81,14 +84,28 @@ class Gtmt extends Command {
     return rows.map((row) => _.zipObject(thead, row));
   }
 
-  async filterDetDepo(fil1: string, fil2: string): Promise<number[]> {
+  async filterBalance(str: string): Promise<number[]> {
     return JSON.parse(
-      await jq.run(
-        `[.[].detDepo[] | select(."種類・名称" == "${fil1}" and ."保有金融機関" == "${fil2}") | .balance]`,
-        this.portfolioPath,
-        { input: "file" }
-      )
+      await jq.run(str, this.portfolioPath, { input: "file" })
     ).map(Number);
+  }
+
+  async filterDetDepo(fil1: string, fil2: string): Promise<number[]> {
+    return this.filterBalance(
+      `[.[].detDepo[] | select(."種類・名称" == "${fil1}" and ."保有金融機関" == "${fil2}") | .balance]`
+    );
+  }
+
+  async filterDetEq(fil1: string): Promise<number[]> {
+    return this.filterBalance(
+      `[.[].detEq[] | select(."銘柄コード" == "${fil1}") | .balance]`
+    );
+  }
+
+  async filterDetMf(fil1: string): Promise<number[]> {
+    return this.filterBalance(
+      `[.[].detMf[] | select(."銘柄名" == "${fil1}") | .balance]`
+    );
   }
 
   async init(): Promise<void> {
@@ -118,6 +135,10 @@ class Gtmt extends Command {
       if (!this.moneyforwardPass) {
         this.log("Set MONEYFORWARD_EMAIL env !");
         throw new Error("Set MONEYFORWARD_EMAIL env !");
+      }
+      if (!this.slackToken) {
+        this.log("Set GTMT_SLACK_TOKEN env !");
+        throw new Error("Set GTMT_SLACK_TOKEN env !");
       }
 
       await this.page.goto("https://moneyforward.com", {
@@ -393,6 +414,20 @@ class Gtmt extends Command {
       const liquid = await this.filterDetDepo("円残高", "Liquid by Quoine");
       console.log({ liquid });
 
+      const geo = await this.filterDetEq("2681");
+      console.log({ geo });
+
+      const aeon = await this.filterDetEq("8267");
+      console.log({ aeon });
+
+      const oneOpen = await this.filterDetMf("One-MHAM新興成長株オープン");
+      console.log({ oneOpen });
+
+      const worldIndex = await this.filterDetMf(
+        "三井住友TAM-世界経済インデックスファンド"
+      );
+      console.log({ worldIndex });
+
       const total = _.zipWith(
         sbi,
         smbc,
@@ -403,8 +438,12 @@ class Gtmt extends Command {
         btcbox,
         bitFlyer,
         liquid,
-        (x1, x2, x3, x4, x5, x6, x7, x8, x9) =>
-          x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9
+        geo,
+        aeon,
+        oneOpen,
+        worldIndex,
+        (x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13) =>
+          x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9 + x10 + x11 + x12 + x13
       );
       console.log({ total });
 
@@ -412,71 +451,10 @@ class Gtmt extends Command {
         await jq.run("[.[].time]", this.portfolioPath, { input: "file" })
       );
 
-      // const imgUrl = encodeURI(
-      //   `https://image-charts.com/chart?cht=lc&chxt=x,y&chd=a:${[
-      //     sbi1,
-      //     sbi2,
-      //     smbc,
-      //     ufj,
-      //     yucho,
-      //     coincheck1,
-      //     coincheck2,
-      //     coincheck3,
-      //     coincheck4,
-      //     coincheck5,
-      //     bitbank1,
-      //     bitbank2,
-      //     btcbox1,
-      //     btcbox2,
-      //     bitFlyer1,
-      //     bitFlyer2,
-      //     bitFlyer3,
-      //     liquid,
-      //   ]
-      //     .map((x) => x.join(","))
-      //     .join("|")}&chs=999x999&chco=${[
-      //     "1E90FF",
-      //     "4169E1",
-      //     "32CD32",
-      //     "DC143C",
-      //     "228B22",
-      //     "00FFFF",
-      //     "00BFFF",
-      //     "48D1CC",
-      //     "6495ED",
-      //     "40E0D0",
-      //     "A9A9A9",
-      //     "C0C0C0",
-      //     "FFA500",
-      //     "FFD700",
-      //     "8B008B",
-      //     "8B0000",
-      //     "A52A2A",
-      //     "00008B",
-      //   ].join(",")}&chdl=${[
-      //     "代表口座 - 円普通 (住信SBIネット銀行)",
-      //     "SBIハイブリッド預金 (住信SBIネット銀行)",
-      //     "残高別普通預金残高 (三井住友銀行)",
-      //     "普通預金 (三菱UFJ銀行)",
-      //     "二二八店 普通 (ゆうちょ銀行)",
-      //     "ビットコイン残高 (coincheck)",
-      //     "Ripple残高 (coincheck)",
-      //     "Litecoin残高 (coincheck)",
-      //     "ビットコイン キャッシュ残高 (coincheck)",
-      //     "円残高 (coincheck)",
-      //     "ビットコイン残高 (bitbank)",
-      //     "円残高 (bitbank)",
-      //     "BTC残高 (BTCBOX)",
-      //     "JPY残高 (BTCBOX)",
-      //     "ビットコイン残高 (bitFlyer)",
-      //     "Mona残高 (bitFlyer)",
-      //     "円残高 (bitFlyer)",
-      //     "円残高 (Liquid by Quoine)",
-      //   ].join("|")}`
-      // );
+      const label = total.map((x, idx) => (idx === total.length - 1 ? x : ""));
 
       const imgUrl = encodeURI(
-        `https://image-charts.com/chart?cht=bvs&chxt=x,y&chd=a:${[
+        `https://image-charts.com/chart?cht=bvs&chxt=y&chd=a:${[
           sbi,
           smbc,
           ufj,
@@ -486,6 +464,10 @@ class Gtmt extends Command {
           btcbox,
           bitFlyer,
           liquid,
+          geo,
+          aeon,
+          oneOpen,
+          worldIndex,
         ]
           .map((x) => x.join(","))
           .join("|")}&chs=999x999&chco=${[
@@ -498,6 +480,10 @@ class Gtmt extends Command {
           "FFA500",
           "8B008B",
           "00008B",
+          "FFFF00",
+          "DDA0DD",
+          "2F4F4F",
+          "000000",
         ].join(",")}&chdl=${[
           "住信SBIネット銀行",
           "三井住友銀行",
@@ -508,7 +494,11 @@ class Gtmt extends Command {
           "BTCBOX",
           "bitFlyer",
           "Liquid by Quoine",
-        ].join("|")}&chl=${total.join("|")}`
+          "ゲオHD",
+          "イオン",
+          "One-MHAM新興成長株オープン",
+          "三井住友TAM-世界経済インデックスファンド",
+        ].join("|")}&chl=${label.join("|")}`
       );
 
       console.log(imgUrl);
@@ -521,6 +511,35 @@ class Gtmt extends Command {
         path: "screenshot/portfolio.png",
         fullPage: true,
       });
+
+      const web = new WebClient(this.slackToken);
+      // const res = (await web.files.upload({
+      //   channels: "#portfolio",
+      //   initial_comment: "現在の資産です！",
+      //   filename: "portfolio.png",
+      //   file: fs.createReadStream("screenshot/portfolio.png"),
+      // })) as any;
+      // console.log(`File uploaded: ${res.file.id}`);
+
+      const res = await web.chat.postMessage({
+        channel: "#portfolio",
+        text: "現在の資産です！",
+        attachments: [
+          {
+            // title: "portfolio",
+            // text: "portfolio",
+            fields: [
+              {
+                title: "portfolio",
+                value: "portfolio",
+              },
+            ],
+            image_url: imgUrl,
+            thumb_url: imgUrl,
+          },
+        ],
+      });
+      console.log({ res });
 
       await this.browser.close();
     } catch (error) {
