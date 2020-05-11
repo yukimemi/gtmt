@@ -116,6 +116,7 @@ class Gtmt extends Command {
         slowMo: this.slowMo,
         devtools: this.devtools,
         timeout: this.timeout,
+        args: ["--no-sandbox"],
       });
       this.page = await this.browser.newPage();
       this.page.setDefaultTimeout(this.timeout);
