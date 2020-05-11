@@ -65,7 +65,6 @@
     "prepack": "rm -rf lib && tsc -b && oclif-dev readme",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
     "watch": "watchexec -w src -w test -e ts,js,json -- nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
-    "build": "oclif-dev pack",
     "debug": "ndb run",
     "version": "oclif-dev readme && git add README.md"
   },
