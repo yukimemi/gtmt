@@ -34,7 +34,7 @@ class Gtmt extends Command {
 
   cookiesPath = "cookies.json";
 
-  portfolioPath = "portfolio.json";
+  portfolioPath = "/tmp/portfolio.json";
 
   filterPortfolio = [
     "time",
@@ -168,20 +168,20 @@ class Gtmt extends Command {
         this.moneyforwardPass
       );
 
-      await this.page.screenshot({
-        path: "screenshot/moneyforward_sign_in_1.png",
-        fullPage: true,
-      });
+      // await this.page.screenshot({
+      //   path: "screenshot/moneyforward_sign_in_1.png",
+      //   fullPage: true,
+      // });
 
       await Promise.all([
         this.page.waitForNavigation(),
         this.page.click('input[type="submit"]'),
       ]);
 
-      await this.page.screenshot({
-        path: "screenshot/moneyforward_sign_in_2.png",
-        fullPage: true,
-      });
+      // await this.page.screenshot({
+      //   path: "screenshot/moneyforward_sign_in_2.png",
+      //   fullPage: true,
+      // });
     } finally {
       this.log("signin end");
     }
@@ -202,10 +202,10 @@ class Gtmt extends Command {
         waitUntil: ["load", "networkidle2"],
       });
 
-      await this.page.screenshot({
-        path: "screenshot/moneyforward_portfolio_1.png",
-        fullPage: true,
-      });
+      // await this.page.screenshot({
+      //   path: "screenshot/moneyforward_portfolio_1.png",
+      //   fullPage: true,
+      // });
 
       // Summary
       const summaryEl = await this.page.$("div.heading-radius-box");
@@ -507,10 +507,10 @@ class Gtmt extends Command {
         waitUntil: ["load", "networkidle2"],
       });
 
-      await this.page.screenshot({
-        path: "screenshot/portfolio.png",
-        fullPage: true,
-      });
+      // await this.page.screenshot({
+      //   path: "screenshot/portfolio.png",
+      //   fullPage: true,
+      // });
 
       const web = new WebClient(this.slackToken);
       // const res = (await web.files.upload({
