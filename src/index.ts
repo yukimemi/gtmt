@@ -532,7 +532,7 @@ class Gtmt extends Command {
             fields: [
               {
                 title: "portfolio",
-                value: "portfolio",
+                value: "",
               },
             ],
             image_url: imgUrl,

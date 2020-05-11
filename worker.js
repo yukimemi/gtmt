@@ -1,7 +1,7 @@
 const CronJob = require("cron").CronJob;
 
 const workerJob = new CronJob({
-  cronTime: "*/1 * * * *",
+  cronTime: "0 5 * * *",
   onTick: function () {
     console.log("onTick start !");
     const fs = require("fs");
