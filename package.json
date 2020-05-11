@@ -17,16 +17,18 @@
     "moment": "^2.25.3",
     "node-jq": "^1.11.0",
     "puppeteer": "^3.0.2",
-    "tslib": "^1"
-  },
-  "devDependencies": {
-    "@oclif/dev-cli": "^1",
-    "@oclif/test": "^1",
+    "tslib": "^1",
+    "ts-node": "^8",
     "@types/chai": "^4",
     "@types/lodash": "^4.14.150",
     "@types/mocha": "^5",
     "@types/node": "^10",
     "@types/puppeteer": "^2.0.1",
+    "typescript": "^3.3"
+  },
+  "devDependencies": {
+    "@oclif/dev-cli": "^1",
+    "@oclif/test": "^1",
     "@typescript-eslint/eslint-plugin": "^2.31.0",
     "@typescript-eslint/parser": "^2.31.0",
     "chai": "^4",
@@ -40,9 +42,7 @@
     "mocha": "^5",
     "ndb": "^1.1.5",
     "nyc": "^14",
-    "prettier": "^2.0.5",
-    "ts-node": "^8",
-    "typescript": "^3.3"
+    "prettier": "^2.0.5"
   },
   "engines": {
     "node": "12.16.x"
