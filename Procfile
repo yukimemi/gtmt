@@ -1,1 +1,1 @@
-worker:./bin/run
+worker: node worker.js
