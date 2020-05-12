@@ -3,7 +3,6 @@
 portfolio.json
 /.nyc_output
 /dist
-/lib
 /package-lock.json
 /screenshot
 /tmp
