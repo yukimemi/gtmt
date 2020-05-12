@@ -363,7 +363,10 @@ class Gtmt extends Command {
 
       const git: SimpleGit = gitP("/tmp/portfolio");
       const status: StatusResult = await git.status();
-      console.log({ status });
+      // console.log({ status });
+
+      await git.addConfig("user.email", `${this.portfolioUser}@gmail.com`);
+      await git.addConfig("user.name", this.portfolioUser);
 
       if (fs.existsSync(this.portfolioPath)) {
         const portfolio = JSON.parse(
@@ -382,6 +385,7 @@ class Gtmt extends Command {
       await git.push();
 
       // const history = JSON.parse(fs.readFileSync(this.portfolioPath, "utf-8"));
+      const web = new WebClient(this.slackToken);
 
       const sbi1 = await this.filterDetDepo(
         "代表口座 - 円普通",
@@ -394,11 +398,64 @@ class Gtmt extends Command {
       const sbi = _.zipWith(sbi1, sbi2, (a, b) => a + b);
       console.log({ sbi });
 
+      const labelSbi = sbi.map((x, idx) => (idx === sbi.length - 1 ? x : ""));
+      const imgUrlSbi = encodeURI(
+        `https://image-charts.com/chart?cht=bvs&chxt=y&chd=a:${sbi.join(
+          ","
+        )}&chs=999x999&chco=1E90FF&chdl=住信SBIネット銀行&chl=${labelSbi.join(
+          "|"
+        )}`
+      );
+      await web.chat.postMessage({
+        channel: "#portfolio",
+        text: "[住信SBIネット銀行] の資産です！",
+        attachments: [
+          {
+            fields: [
+              {
+                title: "portfolio",
+                value: "",
+              },
+            ],
+            // eslint-disable-next-line @typescript-eslint/camelcase
+            image_url: imgUrlSbi,
+            // eslint-disable-next-line @typescript-eslint/camelcase
+            thumb_url: imgUrlSbi,
+          },
+        ],
+      });
+
       const smbc = await this.filterDetDepo(
         "残高別普通預金残高",
         "三井住友銀行"
       );
       console.log({ smbc });
+      const labelSmbc = smbc.map((x, idx) =>
+        idx === smbc.length - 1 ? x : ""
+      );
+      const imgUrlSmbc = encodeURI(
+        `https://image-charts.com/chart?cht=bvs&chxt=y&chd=a:${smbc.join(
+          ","
+        )}&chs=999x999&chco=32CD32&chdl=三井住友銀行&chl=${labelSmbc.join("|")}`
+      );
+      await web.chat.postMessage({
+        channel: "#portfolio",
+        text: "[三井住友銀行] の資産です！",
+        attachments: [
+          {
+            fields: [
+              {
+                title: "portfolio",
+                value: "",
+              },
+            ],
+            // eslint-disable-next-line @typescript-eslint/camelcase
+            image_url: imgUrlSmbc,
+            // eslint-disable-next-line @typescript-eslint/camelcase
+            thumb_url: imgUrlSmbc,
+          },
+        ],
+      });
 
       const ufj = await this.filterDetDepo("普通預金", "三菱UFJ銀行");
       console.log({ ufj });
@@ -551,8 +608,6 @@ class Gtmt extends Command {
       //   path: "screenshot/portfolio.png",
       //   fullPage: true,
       // });
-
-      const web = new WebClient(this.slackToken);
 
       const res = await web.chat.postMessage({
         channel: "#portfolio",
