@@ -1,9 +1,11 @@
 import { Command, flags } from "@oclif/command";
 import { WebClient } from "@slack/web-api";
-import * as fs from "fs";
+import fs from "fs";
 import * as _ from "lodash";
-import * as moment from "moment";
-import * as puppeteer from "puppeteer";
+import moment from "moment-timezone";
+import puppeteer from "puppeteer";
+import rimraf from "rimraf";
+import gitP, { SimpleGit, StatusResult } from "simple-git/promise";
 
 const jq = require("node-jq");
 
@@ -32,9 +34,15 @@ class Gtmt extends Command {
 
   slackToken = process.env.GTMT_SLACK_TOKEN;
 
+  portfolioRepo = process.env.PORTFOLIO_GITHUB_URL;
+
+  portfolioUser = process.env.PORTFOLIO_GITHUB_USER;
+
+  portfolioPass = process.env.PORTFOLIO_GITHUB_PASS;
+
   cookiesPath = "cookies.json";
 
-  portfolioPath = "/tmp/portfolio.json";
+  portfolioPath = "/tmp/portfolio/portfolio.json";
 
   filterPortfolio = [
     "time",
@@ -59,7 +67,9 @@ class Gtmt extends Command {
 
   page!: puppeteer.Page;
 
-  portfolio: object = { time: moment().format("YYYY/MM/DD HH:mm:ss.SSS") };
+  portfolio: object = {
+    time: moment().tz("Asya/Tokyo").format("YYYY/MM/DD HH:mm:ss.SSS"),
+  };
 
   toNormalNumber(yen = ""): string {
     if (/[^0-9,]*([0-9,]+)円/.test(yen)) {
@@ -120,7 +130,7 @@ class Gtmt extends Command {
       });
       this.page = await this.browser.newPage();
       this.page.setDefaultTimeout(this.timeout);
-      this.page.on("console", (msg) => console.log("PAGE LOG: ", msg.text()));
+      // this.page.on("console", (msg) => console.log("PAGE LOG: ", msg.text()));
     } finally {
       this.log("init end");
     }
@@ -332,6 +342,29 @@ class Gtmt extends Command {
 
       console.log({ portfolio: this.portfolio });
 
+      if (!this.portfolioRepo) {
+        this.log("Set PORTFOLIO_GITHUB_URL env !");
+        throw new Error("Set PORTFOLIO_GITHUB_URL env !");
+      }
+      if (!this.portfolioUser) {
+        this.log("Set PORTFOLIO_GITHUB_USER env !");
+        throw new Error("Set PORTFOLIO_GITHUB_USER env !");
+      }
+      if (!this.portfolioPass) {
+        this.log("Set PORTFOLIO_GITHUB_PASS env !");
+        throw new Error("Set PORTFOLIO_GITHUB_PASS env !");
+      }
+
+      rimraf.sync("/tmp/portfolio");
+      const remote = `https://${this.portfolioUser}:${this.portfolioPass}@${this.portfolioRepo}`;
+
+      const gitClone: SimpleGit = gitP("/tmp");
+      await gitClone.clone(remote);
+
+      const git: SimpleGit = gitP("/tmp/portfolio");
+      const status: StatusResult = await git.status();
+      console.log({ status });
+
       if (fs.existsSync(this.portfolioPath)) {
         const portfolio = JSON.parse(
           fs.readFileSync(this.portfolioPath, "utf-8")
@@ -341,6 +374,12 @@ class Gtmt extends Command {
       } else {
         fs.writeFileSync(this.portfolioPath, JSON.stringify([this.portfolio]));
       }
+
+      await git.add(".");
+      await git.commit(
+        moment().tz("Asia/Tokyo").format("YYYY/MM/DD HH:mm:ss.SSS")
+      );
+      await git.push();
 
       // const history = JSON.parse(fs.readFileSync(this.portfolioPath, "utf-8"));
 
@@ -514,13 +553,6 @@ class Gtmt extends Command {
       // });
 
       const web = new WebClient(this.slackToken);
-      // const res = (await web.files.upload({
-      //   channels: "#portfolio",
-      //   initial_comment: "現在の資産です！",
-      //   filename: "portfolio.png",
-      //   file: fs.createReadStream("screenshot/portfolio.png"),
-      // })) as any;
-      // console.log(`File uploaded: ${res.file.id}`);
 
       const res = await web.chat.postMessage({
         channel: "#portfolio",
@@ -535,7 +567,9 @@ class Gtmt extends Command {
                 value: "",
               },
             ],
+            // eslint-disable-next-line @typescript-eslint/camelcase
             image_url: imgUrl,
+            // eslint-disable-next-line @typescript-eslint/camelcase
             thumb_url: imgUrl,
           },
         ],

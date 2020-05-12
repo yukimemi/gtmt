@@ -1,5 +1,5 @@
 import { Command } from "@oclif/command";
-import * as puppeteer from "puppeteer";
+import puppeteer from "puppeteer";
 declare class Gtmt extends Command {
     static description: string;
     static flags: {
@@ -14,6 +14,9 @@ declare class Gtmt extends Command {
     moneyforwardEmail: string | undefined;
     moneyforwardPass: string | undefined;
     slackToken: string | undefined;
+    portfolioRepo: string | undefined;
+    portfolioUser: string | undefined;
+    portfolioPass: string | undefined;
     cookiesPath: string;
     portfolioPath: string;
     filterPortfolio: string[];
