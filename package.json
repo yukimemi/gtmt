@@ -1,7 +1,7 @@
 {
   "name": "gtmt",
   "description": "Gather my portfolio",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "author": "yukimemi @yukimemi",
   "bin": {
     "gtmt": "./bin/run"
@@ -12,18 +12,18 @@
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^2",
     "@slack/web-api": "^5.8.1",
-    "cron": "^1.8.2",
-    "lodash": "^4.17.15",
-    "moment": "^2.25.3",
-    "node-jq": "^1.11.0",
-    "puppeteer": "^3.0.2",
-    "tslib": "^1",
-    "ts-node": "^8",
     "@types/chai": "^4",
     "@types/lodash": "^4.14.150",
     "@types/mocha": "^5",
     "@types/node": "^10",
     "@types/puppeteer": "^2.0.1",
+    "cron": "^1.8.2",
+    "lodash": "^4.17.15",
+    "moment": "^2.25.3",
+    "node-jq": "^1.11.0",
+    "puppeteer": "^3.0.2",
+    "ts-node": "^8",
+    "tslib": "^1",
     "typescript": "^3.3"
   },
   "devDependencies": {
