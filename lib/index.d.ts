@@ -1,4 +1,5 @@
 import { Command } from "@oclif/command";
+import { WebAPICallResult } from "@slack/web-api";
 import puppeteer from "puppeteer";
 declare class Gtmt extends Command {
     static description: string;
@@ -29,6 +30,7 @@ declare class Gtmt extends Command {
     filterDetDepo(fil1: string, fil2: string): Promise<number[]>;
     filterDetEq(fil1: string): Promise<number[]>;
     filterDetMf(fil1: string): Promise<number[]>;
+    postToSlack(balance: number[], ac: string, color: string): Promise<WebAPICallResult>;
     init(): Promise<void>;
     signin(): Promise<void>;
     run(): Promise<void>;
