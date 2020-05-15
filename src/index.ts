@@ -1,5 +1,6 @@
 import { Command, flags } from "@oclif/command";
 import { WebAPICallResult, WebClient } from "@slack/web-api";
+import Color from "color";
 import fs from "fs";
 import * as _ from "lodash";
 import moment from "moment-timezone";
@@ -121,17 +122,22 @@ class Gtmt extends Command {
   async postToSlack(
     balance: number[],
     ac: string,
-    color: string
+    colorStr: string
   ): Promise<WebAPICallResult> {
     const label = balance.map((x, idx) =>
       idx === balance.length - 1 ? x : ""
     );
+    const c = new Color(`#${colorStr}`);
+    const b = c.lighten(0.3).hex().replace("#", "");
     const web = new WebClient(this.slackToken);
     const imgUrl = encodeURI(
-      `https://image-charts.com/chart?cht=bvs&chxt=y&chd=a:${balance.join(
+      `https://image-charts.com/chart?cht=lc&chxt=y&chd=a:${balance.join(
         ","
-      )}&chs=999x999&chco=${color}&chdl=${ac}&chl=${label.join("|")}`
+      )}&chs=999x999&chco=${colorStr}&chdl=${ac}&chl=${label.join(
+        "|"
+      )}&chm=s,${colorStr},0,-1,13.0|B,${b},0,0,0&chls=5`
     );
+    console.log({ imgUrl });
     return web.chat.postMessage({
       channel: "#portfolio",
       text: `[${ac}] の資産です！`,
@@ -410,11 +416,11 @@ class Gtmt extends Command {
         fs.writeFileSync(this.portfolioPath, JSON.stringify([this.portfolio]));
       }
 
-      await git.add(".");
-      await git.commit(
-        moment().tz("Asia/Tokyo").format("YYYY/MM/DD HH:mm:ss.SSS")
-      );
-      await git.push();
+      // await git.add(".");
+      // await git.commit(
+      //   moment().tz("Asia/Tokyo").format("YYYY/MM/DD HH:mm:ss.SSS")
+      // );
+      // await git.push();
 
       // const history = JSON.parse(fs.readFileSync(this.portfolioPath, "utf-8"));
 
@@ -504,21 +510,17 @@ class Gtmt extends Command {
 
       const aeon = await this.filterDetEq("8267");
       console.log({ aeon });
-      await this.postToSlack(aeon, "イオン", "DDA0DD");
+      await this.postToSlack(aeon, "イオン", "FF00FF");
 
       const oneOpen = await this.filterDetMf("One-MHAM新興成長株オープン");
       console.log({ oneOpen });
-      await this.postToSlack(oneOpen, "One-MHAM新興成長株オープン", "2F4F4F");
+      await this.postToSlack(oneOpen, "One-MHAM", "2F4F4F");
 
       const worldIndex = await this.filterDetMf(
         "三井住友TAM-世界経済インデックスファンド"
       );
       console.log({ worldIndex });
-      await this.postToSlack(
-        worldIndex,
-        "三井住友TAM-世界経済インデックスファンド",
-        "D3D3D3"
-      );
+      await this.postToSlack(worldIndex, "世界経済インデックス", "800000");
 
       const total = _.zipWith(
         sbi,
@@ -573,9 +575,9 @@ class Gtmt extends Command {
           "8B008B",
           "00008B",
           "FFFF00",
-          "DDA0DD",
+          "FF00FF",
           "2F4F4F",
-          "D3D3D3",
+          "800000",
         ].join(",")}&chdl=${[
           "住信SBIネット銀行",
           "三井住友銀行",
@@ -588,8 +590,8 @@ class Gtmt extends Command {
           "Liquid by Quoine",
           "ゲオHD",
           "イオン",
-          "One-MHAM新興成長株オープン",
-          "三井住友TAM-世界経済インデックスファンド",
+          "One-MHAM",
+          "世界経済インデックス",
         ].join("|")}&chl=${label.join("|")}`
       );
 
