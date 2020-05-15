@@ -45,6 +45,8 @@ class Gtmt extends Command {
 
   portfolioPath = "/tmp/portfolio/portfolio.json";
 
+  groupByDayPath = "/tmp/group.json";
+
   filterPortfolio = [
     "time",
     "住信SBIネット銀行",
@@ -97,7 +99,7 @@ class Gtmt extends Command {
 
   async filterBalance(str: string): Promise<number[]> {
     return JSON.parse(
-      await jq.run(str, this.portfolioPath, { input: "file" })
+      await jq.run(str, this.groupByDayPath, { input: "file" })
     ).map(Number);
   }
 
@@ -156,6 +158,17 @@ class Gtmt extends Command {
         },
       ],
     });
+  }
+
+  groupByDayPortfolio() {
+    const portfolio = JSON.parse(fs.readFileSync(this.portfolioPath, "utf-8"));
+    const out = _.chain(portfolio)
+      .groupBy((x) => x.time.substring(0, 10))
+      .mapValues((x) => x[0])
+      .values()
+      .value();
+
+    fs.writeFileSync(this.groupByDayPath, JSON.stringify(out));
   }
 
   async init(): Promise<void> {
@@ -416,13 +429,15 @@ class Gtmt extends Command {
         fs.writeFileSync(this.portfolioPath, JSON.stringify([this.portfolio]));
       }
 
-      // await git.add(".");
-      // await git.commit(
-      //   moment().tz("Asia/Tokyo").format("YYYY/MM/DD HH:mm:ss.SSS")
-      // );
-      // await git.push();
+      await git.add(".");
+      await git.commit(
+        moment().tz("Asia/Tokyo").format("YYYY/MM/DD HH:mm:ss.SSS")
+      );
+      await git.push();
 
       // const history = JSON.parse(fs.readFileSync(this.portfolioPath, "utf-8"));
+
+      this.groupByDayPortfolio();
 
       const sbi1 = await this.filterDetDepo(
         "代表口座 - 円普通",
@@ -542,7 +557,7 @@ class Gtmt extends Command {
       console.log({ total });
 
       const times = JSON.parse(
-        await jq.run("[.[].time]", this.portfolioPath, { input: "file" })
+        await jq.run("[.[].time]", this.groupByDayPath, { input: "file" })
       );
 
       const label = total.map((x, idx) => (idx === total.length - 1 ? x : ""));

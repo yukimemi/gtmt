@@ -20,6 +20,7 @@ declare class Gtmt extends Command {
     portfolioPass: string | undefined;
     cookiesPath: string;
     portfolioPath: string;
+    groupByDayPath: string;
     filterPortfolio: string[];
     browser: puppeteer.Browser;
     page: puppeteer.Page;
@@ -31,6 +32,7 @@ declare class Gtmt extends Command {
     filterDetEq(fil1: string): Promise<number[]>;
     filterDetMf(fil1: string): Promise<number[]>;
     postToSlack(balance: number[], ac: string, colorStr: string): Promise<WebAPICallResult>;
+    groupByDayPortfolio(): void;
     init(): Promise<void>;
     signin(): Promise<void>;
     run(): Promise<void>;
