@@ -31,7 +31,7 @@ declare class Gtmt extends Command {
     filterDetDepo(fil1: string, fil2: string): Promise<number[]>;
     filterDetEq(fil1: string): Promise<number[]>;
     filterDetMf(fil1: string): Promise<number[]>;
-    postToSlack(balance: number[], ac: string, colorStr: string): Promise<WebAPICallResult>;
+    postToSlack(balance: number[], ac: string, colorStr: string, xs: string[]): Promise<WebAPICallResult>;
     groupByDayPortfolio(): void;
     init(): Promise<void>;
     signin(): Promise<void>;

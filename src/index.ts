@@ -124,7 +124,8 @@ class Gtmt extends Command {
   async postToSlack(
     balance: number[],
     ac: string,
-    colorStr: string
+    colorStr: string,
+    xs: string[]
   ): Promise<WebAPICallResult> {
     const label = balance.map((x, idx) =>
       idx === balance.length - 1 ? x : ""
@@ -133,7 +134,9 @@ class Gtmt extends Command {
     const b = c.lighten(0.3).hex().replace("#", "");
     const web = new WebClient(this.slackToken);
     const imgUrl = encodeURI(
-      `https://image-charts.com/chart?cht=lc&chxt=y&chd=a:${balance.join(
+      `https://image-charts.com/chart?cht=lc&chxt=x,y&chxl=0:|${xs.join(
+        "|"
+      )}&chd=a:${balance.join(
         ","
       )}&chs=999x999&chco=${colorStr}&chdl=${ac}&chl=${label.join(
         "|"
@@ -439,6 +442,11 @@ class Gtmt extends Command {
 
       this.groupByDayPortfolio();
 
+      const times = JSON.parse(
+        await jq.run("[.[].time]", this.groupByDayPath, { input: "file" })
+      );
+      const dates = times.map((x: string) => x.substr(8, 2));
+
       const sbi1 = await this.filterDetDepo(
         "代表口座 - 円普通",
         "住信SBIネット銀行"
@@ -449,22 +457,22 @@ class Gtmt extends Command {
       );
       const sbi = _.zipWith(sbi1, sbi2, (a, b) => a + b);
       console.log({ sbi });
-      await this.postToSlack(sbi, "住信SBIネット銀行", "1E90FF");
+      await this.postToSlack(sbi, "住信SBIネット銀行", "1E90FF", dates);
 
       const smbc = await this.filterDetDepo(
         "残高別普通預金残高",
         "三井住友銀行"
       );
       console.log({ smbc });
-      await this.postToSlack(smbc, "三井住友銀行", "32CD32");
+      await this.postToSlack(smbc, "三井住友銀行", "32CD32", dates);
 
       const ufj = await this.filterDetDepo("普通", "三菱UFJ銀行");
       console.log({ ufj });
-      await this.postToSlack(ufj, "三菱UFJ銀行", "DC143C");
+      await this.postToSlack(ufj, "三菱UFJ銀行", "DC143C", dates);
 
       const yucho = await this.filterDetDepo("二二八店 普通", "ゆうちょ銀行");
       console.log({ yucho });
-      await this.postToSlack(yucho, "ゆうちょ銀行", "228B22");
+      await this.postToSlack(yucho, "ゆうちょ銀行", "228B22", dates);
 
       const coincheck1 = await this.filterDetDepo(
         "ビットコイン残高",
@@ -486,19 +494,19 @@ class Gtmt extends Command {
         (a, b, c, d, e) => a + b + c + d + e
       );
       console.log({ coincheck });
-      await this.postToSlack(coincheck, "coincheck", "00FFFF");
+      await this.postToSlack(coincheck, "coincheck", "00FFFF", dates);
 
       const bitbank1 = await this.filterDetDepo("ビットコイン残高", "bitbank");
       const bitbank2 = await this.filterDetDepo("円残高", "bitbank");
       const bitbank = _.zipWith(bitbank1, bitbank2, (a, b) => a + b);
       console.log({ bitbank });
-      await this.postToSlack(bitbank, "bitbank", "A9A9A9");
+      await this.postToSlack(bitbank, "bitbank", "A9A9A9", dates);
 
       const btcbox1 = await this.filterDetDepo("BTC残高", "BTCBOX");
       const btcbox2 = await this.filterDetDepo("JPY残高", "BTCBOX");
       const btcbox = _.zipWith(btcbox1, btcbox2, (a, b) => a + b);
       console.log({ btcbox });
-      await this.postToSlack(btcbox, "BTCBOX", "FFA500");
+      await this.postToSlack(btcbox, "BTCBOX", "FFA500", dates);
 
       const bitFlyer1 = await this.filterDetDepo(
         "ビットコイン残高",
@@ -513,29 +521,34 @@ class Gtmt extends Command {
         (a, b, c) => a + b + c
       );
       console.log({ bitFlyer });
-      await this.postToSlack(bitFlyer, "bitFlyer", "8B008B");
+      await this.postToSlack(bitFlyer, "bitFlyer", "8B008B", dates);
 
       const liquid = await this.filterDetDepo("円残高", "Liquid by Quoine");
       console.log({ liquid });
-      await this.postToSlack(liquid, "Liquid by Quoine", "00008B");
+      await this.postToSlack(liquid, "Liquid by Quoine", "00008B", dates);
 
       const geo = await this.filterDetEq("2681");
       console.log({ geo });
-      await this.postToSlack(geo, "ゲオHD", "FFFF00");
+      await this.postToSlack(geo, "ゲオHD", "FFFF00", dates);
 
       const aeon = await this.filterDetEq("8267");
       console.log({ aeon });
-      await this.postToSlack(aeon, "イオン", "FF00FF");
+      await this.postToSlack(aeon, "イオン", "FF00FF", dates);
 
       const oneOpen = await this.filterDetMf("One-MHAM新興成長株オープン");
       console.log({ oneOpen });
-      await this.postToSlack(oneOpen, "One-MHAM", "2F4F4F");
+      await this.postToSlack(oneOpen, "One-MHAM", "2F4F4F", dates);
 
       const worldIndex = await this.filterDetMf(
         "三井住友TAM-世界経済インデックスファンド"
       );
       console.log({ worldIndex });
-      await this.postToSlack(worldIndex, "世界経済インデックス", "800000");
+      await this.postToSlack(
+        worldIndex,
+        "世界経済インデックス",
+        "800000",
+        dates
+      );
 
       const total = _.zipWith(
         sbi,
@@ -556,14 +569,12 @@ class Gtmt extends Command {
       );
       console.log({ total });
 
-      const times = JSON.parse(
-        await jq.run("[.[].time]", this.groupByDayPath, { input: "file" })
-      );
-
       const label = total.map((x, idx) => (idx === total.length - 1 ? x : ""));
 
       const imgUrl = encodeURI(
-        `https://image-charts.com/chart?cht=bvs&chxt=y&chd=a:${[
+        `https://image-charts.com/chart?cht=bvs&chxt=x,y&chxl=0:|${dates.join(
+          "|"
+        )}&chd=a:${[
           sbi,
           smbc,
           ufj,
