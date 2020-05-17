@@ -163,11 +163,11 @@ class Gtmt extends Command {
     });
   }
 
-  groupByDayPortfolio() {
+  groupByDayPortfolio(): void {
     const portfolio = JSON.parse(fs.readFileSync(this.portfolioPath, "utf-8"));
     const out = _.chain(portfolio)
       .groupBy((x) => x.time.substring(0, 10))
-      .mapValues((x) => x[0])
+      .mapValues((x) => x[x.length - 1])
       .values()
       .value();
 
