@@ -23,7 +23,7 @@ class Gtmt extends Command {
 
   headless = true;
 
-  slowMo = 0;
+  slowMo = 100;
 
   devtools = true;
 
@@ -254,6 +254,22 @@ class Gtmt extends Command {
     }
   }
 
+  async update(): Promise<void> {
+    try {
+      this.log("update start");
+
+      await this.page.$$eval(
+        'section#registered-accounts ul.accounts-list a[data-remote="true"][rel="nofollow"][data-method="post"]',
+        (els) => {
+          console.log(els);
+          els.map((el) => (el as HTMLElement).click());
+        }
+      );
+    } finally {
+      this.log("update end");
+    }
+  }
+
   async run(): Promise<void> {
     try {
       const { flags } = this.parse(Gtmt);
@@ -264,6 +280,8 @@ class Gtmt extends Command {
       }
 
       await this.signin();
+
+      await this.update();
 
       await this.page.goto("https://moneyforward.com/bs/portfolio", {
         waitUntil: ["load", "networkidle2"],

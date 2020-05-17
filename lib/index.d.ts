@@ -35,6 +35,7 @@ declare class Gtmt extends Command {
     groupByDayPortfolio(): void;
     init(): Promise<void>;
     signin(): Promise<void>;
+    update(): Promise<void>;
     run(): Promise<void>;
 }
 export = Gtmt;
