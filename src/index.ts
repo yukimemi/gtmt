@@ -1,5 +1,6 @@
 import { Command, flags } from "@oclif/command";
 import { WebAPICallResult, WebClient } from "@slack/web-api";
+// import { BitlyClient } from "bitly";
 import Color from "color";
 import fs from "fs";
 import * as _ from "lodash";
@@ -40,6 +41,8 @@ class Gtmt extends Command {
   portfolioUser = process.env.PORTFOLIO_GITHUB_USER;
 
   portfolioPass = process.env.PORTFOLIO_GITHUB_PASS;
+
+  // bitlyToken = process.env.BITLY_TOKEN;
 
   cookiesPath = "cookies.json";
 
@@ -142,7 +145,15 @@ class Gtmt extends Command {
         "|"
       )}&chm=s,${colorStr},0,-1,13.0|B,${b},0,0,0&chls=5`
     );
+    // if (!this.bitlyToken) {
+    //   this.log("Set BITLY_TOKEN env !");
+    //   throw new Error("Set BITLY_TOKEN env !");
+    // }
     console.log({ imgUrl });
+    // const bitly = new BitlyClient(this.bitlyToken);
+    // const shorten = await bitly.shorten(imgUrl);
+    // console.log({ shortenUrl: shorten.link });
+
     return web.chat.postMessage({
       channel: "#portfolio",
       text: `[${ac}] の資産です！`,
@@ -155,8 +166,10 @@ class Gtmt extends Command {
             },
           ],
           // eslint-disable-next-line @typescript-eslint/camelcase
+          // image_url: shorten.link,
           image_url: imgUrl,
           // eslint-disable-next-line @typescript-eslint/camelcase
+          // thumb_url: shorten.link,
           thumb_url: imgUrl,
         },
       ],
@@ -165,11 +178,26 @@ class Gtmt extends Command {
 
   groupByDayPortfolio(): void {
     const portfolio = JSON.parse(fs.readFileSync(this.portfolioPath, "utf-8"));
-    const out = _.chain(portfolio)
+    const thisMonthStr = moment().format("YYYY/MM");
+
+    const dates = _.chain(portfolio)
       .groupBy((x) => x.time.substring(0, 10))
       .mapValues((x) => x[x.length - 1])
       .values()
       .value();
+
+    const months = _.chain(dates)
+      .filter((x) => x.time.substring(0, 7) !== thisMonthStr)
+      .groupBy((x) => x.time.substring(0, 7))
+      .mapValues((x) => x[x.length - 1])
+      .values()
+      .value();
+
+    const thisMonth = _.chain(dates)
+      .filter((x) => x.time.substring(0, 7) === thisMonthStr)
+      .value();
+
+    const out = _.concat(months, thisMonth);
 
     fs.writeFileSync(this.groupByDayPath, JSON.stringify(out));
   }
@@ -428,6 +456,10 @@ class Gtmt extends Command {
         this.log("Set PORTFOLIO_GITHUB_PASS env !");
         throw new Error("Set PORTFOLIO_GITHUB_PASS env !");
       }
+      // if (!this.bitlyToken) {
+      // this.log("Set BITLY_TOKEN env !");
+      // throw new Error("Set BITLY_TOKEN env !");
+      // }
 
       rimraf.sync("/tmp/portfolio");
       const remote = `https://${this.portfolioUser}:${this.portfolioPass}@${this.portfolioRepo}`;
@@ -568,6 +600,22 @@ class Gtmt extends Command {
         dates
       );
 
+      console.log({
+        sbi: sbi.length,
+        smbc: smbc.length,
+        ufj: ufj.length,
+        yucho: yucho.length,
+        coincheck: coincheck.length,
+        bitbank: bitbank.length,
+        btcbox: btcbox.length,
+        bitFlyer: bitFlyer.length,
+        liquid: liquid.length,
+        geo: geo.length,
+        aeon: aeon.length,
+        oneOpen: oneOpen.length,
+        worldIndex: worldIndex.length,
+      });
+
       const total = _.zipWith(
         sbi,
         smbc,
@@ -639,7 +687,11 @@ class Gtmt extends Command {
         ].join("|")}&chl=${label.join("|")}`
       );
 
-      console.log(imgUrl);
+      console.log({ imgUrl });
+
+      // const bitly = new BitlyClient(this.bitlyToken);
+      // const shorten = await bitly.shorten(imgUrl);
+      // console.log({ shortenUrl: shorten.link });
 
       const web = new WebClient(this.slackToken);
       const res = await web.chat.postMessage({
@@ -656,8 +708,10 @@ class Gtmt extends Command {
               },
             ],
             // eslint-disable-next-line @typescript-eslint/camelcase
+            // image_url: shorten.link,
             image_url: imgUrl,
             // eslint-disable-next-line @typescript-eslint/camelcase
+            // thumb_url: shorten.link,
             thumb_url: imgUrl,
           },
         ],
