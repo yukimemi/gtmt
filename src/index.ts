@@ -242,7 +242,7 @@ class Gtmt extends Command {
 
       await Promise.all([
         this.page.waitForNavigation(),
-        this.page.click('a[href="/users/sign_in"]'),
+        this.page.click('a[href="/sign_in"]'),
       ]);
       await Promise.all([
         this.page.waitForNavigation(),
