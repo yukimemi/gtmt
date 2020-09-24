@@ -19,7 +19,7 @@ $ npm install -g gtmt
 $ gtmt COMMAND
 running command...
 $ gtmt (-v|--version|version)
-gtmt/0.1.0 darwin-x64 node-v12.16.1
+gtmt/0.1.0 darwin-x64 node-v12.16.3
 $ gtmt --help [COMMAND]
 USAGE
   $ gtmt COMMAND

@@ -18,7 +18,6 @@ declare class Gtmt extends Command {
     portfolioRepo: string | undefined;
     portfolioUser: string | undefined;
     portfolioPass: string | undefined;
-    cookiesPath: string;
     portfolioPath: string;
     groupByDayPath: string;
     filterPortfolio: string[];

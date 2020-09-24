@@ -44,8 +44,6 @@ class Gtmt extends Command {
 
   // bitlyToken = process.env.BITLY_TOKEN;
 
-  cookiesPath = "cookies.json";
-
   portfolioPath = "/tmp/portfolio/portfolio.json";
 
   groupByDayPath = "/tmp/group.json";
@@ -550,7 +548,7 @@ class Gtmt extends Command {
       const bitbank2 = await this.filterDetDepo("円残高", "bitbank");
       const bitbank = _.zipWith(bitbank1, bitbank2, (a, b) => a + b);
       console.log({ bitbank });
-      await this.postToSlack(bitbank, "bitbank", "A9A9A9", dates);
+      // await this.postToSlack(bitbank, "bitbank", "A9A9A9", dates);
 
       const btcbox1 = await this.filterDetDepo("BTC残高", "BTCBOX");
       const btcbox2 = await this.filterDetDepo("JPY残高", "BTCBOX");
@@ -606,7 +604,7 @@ class Gtmt extends Command {
         ufj: ufj.length,
         yucho: yucho.length,
         coincheck: coincheck.length,
-        bitbank: bitbank.length,
+        // bitbank: bitbank.length,
         btcbox: btcbox.length,
         bitFlyer: bitFlyer.length,
         liquid: liquid.length,
@@ -622,7 +620,6 @@ class Gtmt extends Command {
         ufj,
         yucho,
         coincheck,
-        bitbank,
         btcbox,
         bitFlyer,
         liquid,
@@ -630,8 +627,8 @@ class Gtmt extends Command {
         aeon,
         oneOpen,
         worldIndex,
-        (x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13) =>
-          x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9 + x10 + x11 + x12 + x13
+        (x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12) =>
+          x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9 + x10 + x11 + x12
       );
       console.log({ total });
 
@@ -646,7 +643,6 @@ class Gtmt extends Command {
           ufj,
           yucho,
           coincheck,
-          bitbank,
           btcbox,
           bitFlyer,
           liquid,
@@ -662,7 +658,6 @@ class Gtmt extends Command {
           "DC143C",
           "228B22",
           "00FFFF",
-          "A9A9A9",
           "FFA500",
           "8B008B",
           "00008B",
@@ -676,7 +671,6 @@ class Gtmt extends Command {
           "三菱UFJ銀行",
           "ゆうちょ銀行",
           "coincheck",
-          "bitbank",
           "BTCBOX",
           "bitFlyer",
           "Liquid by Quoine",
