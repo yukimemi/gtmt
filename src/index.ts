@@ -554,7 +554,7 @@ class Gtmt extends Command {
       const btcbox2 = await this.filterDetDepo("JPY残高", "BTCBOX");
       const btcbox = _.zipWith(btcbox1, btcbox2, (a, b) => a + b);
       console.log({ btcbox });
-      await this.postToSlack(btcbox, "BTCBOX", "FFA500", dates);
+      // await this.postToSlack(btcbox, "BTCBOX", "FFA500", dates);
 
       const bitFlyer1 = await this.filterDetDepo(
         "ビットコイン残高",
@@ -605,7 +605,7 @@ class Gtmt extends Command {
         yucho: yucho.length,
         coincheck: coincheck.length,
         // bitbank: bitbank.length,
-        btcbox: btcbox.length,
+        // btcbox: btcbox.length,
         bitFlyer: bitFlyer.length,
         liquid: liquid.length,
         geo: geo.length,
@@ -620,15 +620,14 @@ class Gtmt extends Command {
         ufj,
         yucho,
         coincheck,
-        btcbox,
         bitFlyer,
         liquid,
         geo,
         aeon,
         oneOpen,
         worldIndex,
-        (x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12) =>
-          x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9 + x10 + x11 + x12
+        (x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11) =>
+          x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9 + x10 + x11
       );
       console.log({ total });
 
@@ -643,7 +642,6 @@ class Gtmt extends Command {
           ufj,
           yucho,
           coincheck,
-          btcbox,
           bitFlyer,
           liquid,
           geo,
@@ -658,7 +656,6 @@ class Gtmt extends Command {
           "DC143C",
           "228B22",
           "00FFFF",
-          "FFA500",
           "8B008B",
           "00008B",
           "FFFF00",
@@ -671,7 +668,6 @@ class Gtmt extends Command {
           "三菱UFJ銀行",
           "ゆうちょ銀行",
           "coincheck",
-          "BTCBOX",
           "bitFlyer",
           "Liquid by Quoine",
           "ゲオHD",
