@@ -573,7 +573,7 @@ class Gtmt extends Command {
 
       const liquid = await this.filterDetDepo("円残高", "Liquid by Quoine");
       console.log({ liquid });
-      await this.postToSlack(liquid, "Liquid by Quoine", "00008B", dates);
+      // await this.postToSlack(liquid, "Liquid by Quoine", "00008B", dates);
 
       const geo = await this.filterDetEq("2681");
       console.log({ geo });
@@ -607,7 +607,7 @@ class Gtmt extends Command {
         // bitbank: bitbank.length,
         // btcbox: btcbox.length,
         bitFlyer: bitFlyer.length,
-        liquid: liquid.length,
+        // liquid: liquid.length,
         geo: geo.length,
         aeon: aeon.length,
         oneOpen: oneOpen.length,
@@ -621,13 +621,12 @@ class Gtmt extends Command {
         yucho,
         coincheck,
         bitFlyer,
-        liquid,
         geo,
         aeon,
         oneOpen,
         worldIndex,
-        (x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11) =>
-          x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9 + x10 + x11
+        (x1, x2, x3, x4, x5, x6, x7, x8, x9, x10) =>
+          x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9 + x10
       );
       console.log({ total });
 
@@ -643,7 +642,6 @@ class Gtmt extends Command {
           yucho,
           coincheck,
           bitFlyer,
-          liquid,
           geo,
           aeon,
           oneOpen,
@@ -657,7 +655,6 @@ class Gtmt extends Command {
           "228B22",
           "00FFFF",
           "8B008B",
-          "00008B",
           "FFFF00",
           "FF00FF",
           "2F4F4F",
@@ -669,7 +666,6 @@ class Gtmt extends Command {
           "ゆうちょ銀行",
           "coincheck",
           "bitFlyer",
-          "Liquid by Quoine",
           "ゲオHD",
           "イオン",
           "One-MHAM",
