@@ -22,7 +22,7 @@ class Gtmt extends Command {
     force: flags.boolean({ char: "f" }),
   };
 
-  headless = true;
+  headless = false;
 
   slowMo = 100;
 
@@ -179,20 +179,28 @@ class Gtmt extends Command {
     const thisMonthStr = moment().format("YYYY/MM");
 
     const dates = _.chain(portfolio)
-      .groupBy((x) => x.time.substring(0, 10))
+      .groupBy((x) => x.time.substr(0, 10))
       .mapValues((x) => x[x.length - 1])
       .values()
       .value();
 
     const months = _.chain(dates)
-      .filter((x) => x.time.substring(0, 7) !== thisMonthStr)
-      .groupBy((x) => x.time.substring(0, 7))
+      .filter((x) => x.time.substr(0, 7) !== thisMonthStr)
+      .groupBy((x) => x.time.substr(0, 7))
       .mapValues((x) => x[x.length - 1])
       .values()
+      .map((x) => {
+        x.label = x.time.substr(5, 2) + "月";
+        return x;
+      })
       .value();
 
     const thisMonth = _.chain(dates)
-      .filter((x) => x.time.substring(0, 7) === thisMonthStr)
+      .filter((x) => x.time.substr(0, 7) === thisMonthStr)
+      .map((x) => {
+        x.label = x.time.substr(8, 2) + "日";
+        return x;
+      })
       .value();
 
     const out = _.concat(months, thisMonth);
@@ -490,10 +498,13 @@ class Gtmt extends Command {
 
       this.groupByDayPortfolio();
 
-      const times = JSON.parse(
-        await jq.run("[.[].time]", this.groupByDayPath, { input: "file" })
+      // const times = JSON.parse(
+      //   await jq.run("[.[].time]", this.groupByDayPath, { input: "file" })
+      // );
+      // const dates = times.map((x: string) => x.substr(8, 2));
+      const dates = JSON.parse(
+        await jq.run("[.[].label]", this.groupByDayPath, { input: "file" })
       );
-      const dates = times.map((x: string) => x.substr(8, 2));
 
       const sbi1 = await this.filterDetDepo(
         "代表口座 - 円普通",
