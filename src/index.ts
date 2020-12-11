@@ -553,7 +553,7 @@ class Gtmt extends Command {
         (a, b, c, d, e) => a + b + c + d + e
       );
       console.log({ coincheck });
-      // await this.postToSlack(coincheck, "coincheck", "00FFFF", dates);
+      await this.postToSlack(coincheck, "coincheck", "00FFFF", dates);
 
       const bitbank1 = await this.filterDetDepo("ビットコイン残高", "bitbank");
       const bitbank2 = await this.filterDetDepo("円残高", "bitbank");
@@ -580,7 +580,7 @@ class Gtmt extends Command {
         (a, b, c) => a + b + c
       );
       console.log({ bitFlyer });
-      // await this.postToSlack(bitFlyer, "bitFlyer", "8B008B", dates);
+      await this.postToSlack(bitFlyer, "bitFlyer", "8B008B", dates);
 
       const liquid = await this.filterDetDepo("円残高", "Liquid by Quoine");
       console.log({ liquid });
@@ -614,10 +614,10 @@ class Gtmt extends Command {
         smbc: smbc.length,
         ufj: ufj.length,
         yucho: yucho.length,
-        // coincheck: coincheck.length,
+        coincheck: coincheck.length,
         // bitbank: bitbank.length,
         // btcbox: btcbox.length,
-        // bitFlyer: bitFlyer.length,
+        bitFlyer: bitFlyer.length,
         // liquid: liquid.length,
         // geo: geo.length,
         aeon: aeon.length,
@@ -633,8 +633,10 @@ class Gtmt extends Command {
         aeon,
         oneOpen,
         worldIndex,
-        (x1, x2, x3, x4, x5, x6, x7) =>
-          x1 + x2 + x3 + x4 + x5 + x6 + x7
+        coincheck,
+        bitFlyer,
+        (x1, x2, x3, x4, x5, x6, x7, x8, x9) =>
+          x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9
       );
       console.log({ total });
 
@@ -643,25 +645,29 @@ class Gtmt extends Command {
       const imgUrl = encodeURI(
         `https://image-charts.com/chart?cht=bvs&chxt=x,y&chxl=0:|${dates.join(
           "|"
-        )}&chd=a:${[sbi, smbc, ufj, yucho, aeon, oneOpen, worldIndex]
+        )}&chd=a:${[sbi, smbc, ufj, yucho, aeon, oneOpen, worldIndex, coincheck, bitFlyer]
           .map((x) => x.join(","))
           .join("|")}&chs=999x999&chco=${[
-          "1E90FF",
-          "32CD32",
-          "DC143C",
-          "228B22",
-          "FF00FF",
-          "2F4F4F",
-          "800000",
-        ].join(",")}&chdl=${[
-          "住信SBIネット銀行",
-          "三井住友銀行",
-          "三菱UFJ銀行",
-          "ゆうちょ銀行",
-          "イオン",
-          "One-MHAM",
-          "世界経済インデックス",
-        ].join("|")}&chl=${label.join("|")}`
+            "1E90FF",
+            "32CD32",
+            "DC143C",
+            "228B22",
+            "FF00FF",
+            "2F4F4F",
+            "800000",
+            "00FFFF",
+            "8B008B"
+          ].join(",")}&chdl=${[
+            "住信SBIネット銀行",
+            "三井住友銀行",
+            "三菱UFJ銀行",
+            "ゆうちょ銀行",
+            "イオン",
+            "One-MHAM",
+            "世界経済インデックス",
+            "coincheck",
+            "bitFlyer"
+          ].join("|")}&chl=${label.join("|")}`
       );
 
       console.log({ imgUrl });
