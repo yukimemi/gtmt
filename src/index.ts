@@ -586,9 +586,9 @@ class Gtmt extends Command {
       console.log({ liquid });
       // await this.postToSlack(liquid, "Liquid by Quoine", "00008B", dates);
 
-      const geo = await this.filterDetEq("2681");
-      console.log({ geo });
-      await this.postToSlack(geo, "ゲオHD", "FFFF00", dates);
+      // const geo = await this.filterDetEq("2681");
+      // console.log({ geo });
+      // await this.postToSlack(geo, "ゲオHD", "FFFF00", dates);
 
       const aeon = await this.filterDetEq("8267");
       console.log({ aeon });
@@ -619,7 +619,7 @@ class Gtmt extends Command {
         // btcbox: btcbox.length,
         // bitFlyer: bitFlyer.length,
         // liquid: liquid.length,
-        geo: geo.length,
+        // geo: geo.length,
         aeon: aeon.length,
         oneOpen: oneOpen.length,
         worldIndex: worldIndex.length,
@@ -630,12 +630,11 @@ class Gtmt extends Command {
         smbc,
         ufj,
         yucho,
-        geo,
         aeon,
         oneOpen,
         worldIndex,
-        (x1, x2, x3, x4, x5, x6, x7, x8) =>
-          x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8
+        (x1, x2, x3, x4, x5, x6, x7) =>
+          x1 + x2 + x3 + x4 + x5 + x6 + x7
       );
       console.log({ total });
 
@@ -644,14 +643,13 @@ class Gtmt extends Command {
       const imgUrl = encodeURI(
         `https://image-charts.com/chart?cht=bvs&chxt=x,y&chxl=0:|${dates.join(
           "|"
-        )}&chd=a:${[sbi, smbc, ufj, yucho, geo, aeon, oneOpen, worldIndex]
+        )}&chd=a:${[sbi, smbc, ufj, yucho, aeon, oneOpen, worldIndex]
           .map((x) => x.join(","))
           .join("|")}&chs=999x999&chco=${[
           "1E90FF",
           "32CD32",
           "DC143C",
           "228B22",
-          "FFFF00",
           "FF00FF",
           "2F4F4F",
           "800000",
@@ -660,7 +658,6 @@ class Gtmt extends Command {
           "三井住友銀行",
           "三菱UFJ銀行",
           "ゆうちょ銀行",
-          "ゲオHD",
           "イオン",
           "One-MHAM",
           "世界経済インデックス",
