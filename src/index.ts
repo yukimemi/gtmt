@@ -1,6 +1,5 @@
 import { Command, flags } from "@oclif/command";
 import { WebAPICallResult, WebClient } from "@slack/web-api";
-// import { BitlyClient } from "bitly";
 import Color from "color";
 import fs from "fs";
 import * as _ from "lodash";
@@ -22,7 +21,7 @@ class Gtmt extends Command {
     force: flags.boolean({ char: "f" }),
   };
 
-  headless = false;
+  headless = true;
 
   slowMo = 100;
 
@@ -216,7 +215,11 @@ class Gtmt extends Command {
         slowMo: this.slowMo,
         devtools: this.devtools,
         timeout: this.timeout,
-        args: ["--no-sandbox"],
+        args: [
+          "--no-sandbox",
+          "--disable-dev-shm-usage",
+          "--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 11_1_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36",
+        ],
       });
       this.page = await this.browser.newPage();
       this.page.setDefaultTimeout(this.timeout);
@@ -245,6 +248,11 @@ class Gtmt extends Command {
       await this.page.goto("https://moneyforward.com", {
         waitUntil: ["load", "networkidle2"],
       });
+
+      // await this.page.screenshot({
+      //   path: "screenshot/moneyforward_top.png",
+      //   fullPage: true,
+      // });
 
       await Promise.all([
         this.page.waitForNavigation(),
@@ -645,29 +653,39 @@ class Gtmt extends Command {
       const imgUrl = encodeURI(
         `https://image-charts.com/chart?cht=bvs&chxt=x,y&chxl=0:|${dates.join(
           "|"
-        )}&chd=a:${[sbi, smbc, ufj, yucho, aeon, oneOpen, worldIndex, coincheck, bitFlyer]
+        )}&chd=a:${[
+          sbi,
+          smbc,
+          ufj,
+          yucho,
+          aeon,
+          oneOpen,
+          worldIndex,
+          coincheck,
+          bitFlyer,
+        ]
           .map((x) => x.join(","))
           .join("|")}&chs=999x999&chco=${[
-            "1E90FF",
-            "32CD32",
-            "DC143C",
-            "228B22",
-            "FF00FF",
-            "2F4F4F",
-            "800000",
-            "00FFFF",
-            "8B008B"
-          ].join(",")}&chdl=${[
-            "住信SBIネット銀行",
-            "三井住友銀行",
-            "三菱UFJ銀行",
-            "ゆうちょ銀行",
-            "イオン",
-            "One-MHAM",
-            "世界経済インデックス",
-            "coincheck",
-            "bitFlyer"
-          ].join("|")}&chl=${label.join("|")}`
+          "1E90FF",
+          "32CD32",
+          "DC143C",
+          "228B22",
+          "FF00FF",
+          "2F4F4F",
+          "800000",
+          "00FFFF",
+          "8B008B",
+        ].join(",")}&chdl=${[
+          "住信SBIネット銀行",
+          "三井住友銀行",
+          "三菱UFJ銀行",
+          "ゆうちょ銀行",
+          "イオン",
+          "One-MHAM",
+          "世界経済インデックス",
+          "coincheck",
+          "bitFlyer",
+        ].join("|")}&chl=${label.join("|")}`
       );
 
       console.log({ imgUrl });
