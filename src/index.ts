@@ -61,6 +61,7 @@ class Gtmt extends Command {
     "Liquid by Quoine",
     "2681-ゲオHD",
     "8267-イオン",
+    "WealthNavi（ウェルスナビ）",
     "One-MHAM新興成長株オープン",
     "三井住友TAM-世界経済インデックスファンド",
     "Amazon.co.jp-Amazonポイント",
@@ -205,6 +206,11 @@ class Gtmt extends Command {
     const out = _.concat(months, thisMonth);
 
     fs.writeFileSync(this.groupByDayPath, JSON.stringify(out));
+  }
+
+  adjustLength(exchange: number[], dates: string[]): number[] {
+    const diff = dates.length - exchange.length;
+    return _.concat(_.times(diff, _.constant(0)), exchange);
   }
 
   async init(): Promise<void> {
@@ -522,23 +528,24 @@ class Gtmt extends Command {
         "SBIハイブリッド預金",
         "住信SBIネット銀行"
       );
-      const sbi = _.zipWith(sbi1, sbi2, (a, b) => a + b);
+      let sbi = _.zipWith(sbi1, sbi2, (a, b) => a + b);
       console.log({ sbi });
+      sbi = this.adjustLength(sbi, dates);
       await this.postToSlack(sbi, "住信SBIネット銀行", "1E90FF", dates);
 
-      const smbc = await this.filterDetDepo(
-        "残高別普通預金残高",
-        "三井住友銀行"
-      );
+      let smbc = await this.filterDetDepo("残高別普通預金残高", "三井住友銀行");
       console.log({ smbc });
+      smbc = this.adjustLength(smbc, dates);
       await this.postToSlack(smbc, "三井住友銀行", "32CD32", dates);
 
-      const ufj = await this.filterDetDepo("普通", "三菱UFJ銀行");
+      let ufj = await this.filterDetDepo("普通", "三菱UFJ銀行");
       console.log({ ufj });
+      ufj = this.adjustLength(ufj, dates);
       await this.postToSlack(ufj, "三菱UFJ銀行", "DC143C", dates);
 
-      const yucho = await this.filterDetDepo("二二八店 普通", "ゆうちょ銀行");
+      let yucho = await this.filterDetDepo("二二八店 普通", "ゆうちょ銀行");
       console.log({ yucho });
+      yucho = this.adjustLength(yucho, dates);
       await this.postToSlack(yucho, "ゆうちょ銀行", "228B22", dates);
 
       const coincheck1 = await this.filterDetDepo(
@@ -552,7 +559,7 @@ class Gtmt extends Command {
         "coincheck"
       );
       const coincheck5 = await this.filterDetDepo("円残高", "coincheck");
-      const coincheck = _.zipWith(
+      let coincheck = _.zipWith(
         coincheck1,
         coincheck2,
         coincheck3,
@@ -561,18 +568,21 @@ class Gtmt extends Command {
         (a, b, c, d, e) => a + b + c + d + e
       );
       console.log({ coincheck });
+      coincheck = this.adjustLength(coincheck, dates);
       await this.postToSlack(coincheck, "coincheck", "00FFFF", dates);
 
       const bitbank1 = await this.filterDetDepo("ビットコイン残高", "bitbank");
       const bitbank2 = await this.filterDetDepo("円残高", "bitbank");
-      const bitbank = _.zipWith(bitbank1, bitbank2, (a, b) => a + b);
+      let bitbank = _.zipWith(bitbank1, bitbank2, (a, b) => a + b);
       console.log({ bitbank });
+      bitbank = this.adjustLength(bitbank, dates);
       // await this.postToSlack(bitbank, "bitbank", "A9A9A9", dates);
 
       const btcbox1 = await this.filterDetDepo("BTC残高", "BTCBOX");
       const btcbox2 = await this.filterDetDepo("JPY残高", "BTCBOX");
-      const btcbox = _.zipWith(btcbox1, btcbox2, (a, b) => a + b);
+      let btcbox = _.zipWith(btcbox1, btcbox2, (a, b) => a + b);
       console.log({ btcbox });
+      btcbox = this.adjustLength(btcbox, dates);
       // await this.postToSlack(btcbox, "BTCBOX", "FFA500", dates);
 
       const bitFlyer1 = await this.filterDetDepo(
@@ -581,41 +591,59 @@ class Gtmt extends Command {
       );
       const bitFlyer2 = await this.filterDetDepo("Mona残高", "bitFlyer");
       const bitFlyer3 = await this.filterDetDepo("円残高", "bitFlyer");
-      const bitFlyer = _.zipWith(
+      let bitFlyer = _.zipWith(
         bitFlyer1,
         bitFlyer2,
         bitFlyer3,
         (a, b, c) => a + b + c
       );
       console.log({ bitFlyer });
+      bitFlyer = this.adjustLength(bitFlyer, dates);
       await this.postToSlack(bitFlyer, "bitFlyer", "8B008B", dates);
 
-      const liquid = await this.filterDetDepo("円残高", "Liquid by Quoine");
+      const liquid1 = await this.filterDetDepo("円残高", "Liquid by Quoine");
+      const liquid2 = await this.filterDetDepo(
+        "ビットコイン残高",
+        "Liquid by Quoine"
+      );
+      let liquid = _.zipWith(liquid1, liquid2, (a, b) => a + b);
       console.log({ liquid });
+      liquid = this.adjustLength(liquid, dates);
       // await this.postToSlack(liquid, "Liquid by Quoine", "00008B", dates);
 
       // const geo = await this.filterDetEq("2681");
       // console.log({ geo });
       // await this.postToSlack(geo, "ゲオHD", "FFFF00", dates);
 
-      const aeon = await this.filterDetEq("8267");
+      let aeon = await this.filterDetEq("8267");
       console.log({ aeon });
+      aeon = this.adjustLength(aeon, dates);
       await this.postToSlack(aeon, "イオン", "FF00FF", dates);
 
-      const oneOpen = await this.filterDetMf("One-MHAM新興成長株オープン");
+      let oneOpen = await this.filterDetMf("One-MHAM新興成長株オープン");
       console.log({ oneOpen });
+      oneOpen = this.adjustLength(oneOpen, dates);
       await this.postToSlack(oneOpen, "One-MHAM", "2F4F4F", dates);
 
-      const worldIndex = await this.filterDetMf(
+      let worldIndex = await this.filterDetMf(
         "三井住友TAM-世界経済インデックスファンド"
       );
       console.log({ worldIndex });
+      worldIndex = this.adjustLength(worldIndex, dates);
       await this.postToSlack(
         worldIndex,
         "世界経済インデックス",
         "800000",
         dates
       );
+
+      let wealthNavi = await this.filterDetDepo(
+        "現金",
+        "WealthNavi（ウェルスナビ）"
+      );
+      console.log({ wealthNavi });
+      wealthNavi = this.adjustLength(wealthNavi, dates);
+      await this.postToSlack(wealthNavi, "WealthNavi", "1688C5", dates);
 
       console.log({
         sbi: sbi.length,
@@ -627,10 +655,10 @@ class Gtmt extends Command {
         // btcbox: btcbox.length,
         bitFlyer: bitFlyer.length,
         // liquid: liquid.length,
-        // geo: geo.length,
         aeon: aeon.length,
         oneOpen: oneOpen.length,
         worldIndex: worldIndex.length,
+        wealthNavi: wealthNavi.length,
       });
 
       const total = _.zipWith(
@@ -643,8 +671,9 @@ class Gtmt extends Command {
         worldIndex,
         coincheck,
         bitFlyer,
-        (x1, x2, x3, x4, x5, x6, x7, x8, x9) =>
-          x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9
+        wealthNavi,
+        (x1, x2, x3, x4, x5, x6, x7, x8, x9, x10) =>
+          x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9 + x10
       );
       console.log({ total });
 
@@ -663,6 +692,7 @@ class Gtmt extends Command {
           worldIndex,
           coincheck,
           bitFlyer,
+          wealthNavi,
         ]
           .map((x) => x.join(","))
           .join("|")}&chs=999x999&chco=${[
@@ -675,6 +705,7 @@ class Gtmt extends Command {
           "800000",
           "00FFFF",
           "8B008B",
+          "1688C5",
         ].join(",")}&chdl=${[
           "住信SBIネット銀行",
           "三井住友銀行",
@@ -685,6 +716,7 @@ class Gtmt extends Command {
           "世界経済インデックス",
           "coincheck",
           "bitFlyer",
+          "WealthNavi",
         ].join("|")}&chl=${label.join("|")}`
       );
 

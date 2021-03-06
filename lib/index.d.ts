@@ -32,6 +32,7 @@ declare class Gtmt extends Command {
     filterDetMf(fil1: string): Promise<number[]>;
     postToSlack(balance: number[], ac: string, colorStr: string, xs: string[]): Promise<WebAPICallResult>;
     groupByDayPortfolio(): void;
+    adjustLength(exchange: number[], dates: string[]): number[];
     init(): Promise<void>;
     signin(): Promise<void>;
     update(): Promise<void>;
