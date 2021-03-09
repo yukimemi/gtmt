@@ -121,6 +121,11 @@ class Gtmt extends Command {
       `[.[].detMf[] | select(."銘柄名" == "${fil1}") | .balance]`
     );
   }
+  // async filterDetMfExt(fil1: string): Promise<number[][]> {
+  //   return this.filterBalance(
+  //     `[.[].detMf[] | select(."保有金融機関" == "${fil1}") | .balance]`
+  //   );
+  // }
 
   async postToSlack(
     balance: number[],
@@ -637,12 +642,34 @@ class Gtmt extends Command {
         dates
       );
 
-      let wealthNavi = await this.filterDetDepo(
+      let wealthNavi1 = await this.filterDetDepo(
         "現金",
         "WealthNavi（ウェルスナビ）"
       );
-      console.log({ wealthNavi });
-      wealthNavi = this.adjustLength(wealthNavi, dates);
+      wealthNavi1 = this.adjustLength(wealthNavi1, dates);
+      let wealthNavi2 = await this.filterDetMf("米国株(VTI)");
+      wealthNavi2 = this.adjustLength(wealthNavi2, dates);
+      let wealthNavi3 = await this.filterDetMf("日欧株(VEA)");
+      wealthNavi3 = this.adjustLength(wealthNavi3, dates);
+      let wealthNavi4 = await this.filterDetMf("新興国株(VWO)");
+      wealthNavi4 = this.adjustLength(wealthNavi4, dates);
+      let wealthNavi5 = await this.filterDetMf("米国債券(AGG)");
+      wealthNavi5 = this.adjustLength(wealthNavi5, dates);
+      let wealthNavi6 = await this.filterDetMf("金(GLD)");
+      wealthNavi6 = this.adjustLength(wealthNavi6, dates);
+      let wealthNavi7 = await this.filterDetMf("不動産(IYR)");
+      wealthNavi7 = this.adjustLength(wealthNavi7, dates);
+
+      let wealthNavi = _.zipWith(
+        wealthNavi1,
+        wealthNavi2,
+        wealthNavi3,
+        wealthNavi4,
+        wealthNavi5,
+        wealthNavi6,
+        wealthNavi7,
+        (a, b, c, d, e, f, g) => a + b + c + d + e + f + g
+      );
       await this.postToSlack(wealthNavi, "WealthNavi", "1688C5", dates);
 
       console.log({
