@@ -100,25 +100,25 @@ class Gtmt extends Command {
 
   async filterBalance(str: string): Promise<number[]> {
     return JSON.parse(
-      await jq.run(str, this.groupByDayPath, { input: "file" })
+      await jq.run(str, this.groupByDayPath, { input: "file" }),
     ).map(Number);
   }
 
   async filterDetDepo(fil1: string, fil2: string): Promise<number[]> {
     return this.filterBalance(
-      `[.[].detDepo[] | select(."種類・名称" == "${fil1}" and ."保有金融機関" == "${fil2}") | .balance]`
+      `[.[].detDepo[] | select(."種類・名称" == "${fil1}" and ."保有金融機関" == "${fil2}") | .balance]`,
     );
   }
 
   async filterDetEq(fil1: string): Promise<number[]> {
     return this.filterBalance(
-      `[.[].detEq[] | select(."銘柄コード" == "${fil1}") | .balance]`
+      `[.[].detEq[] | select(."銘柄コード" == "${fil1}") | .balance]`,
     );
   }
 
   async filterDetMf(fil1: string): Promise<number[]> {
     return this.filterBalance(
-      `[.[].detMf[] | select(."銘柄名" == "${fil1}") | .balance]`
+      `[.[].detMf[] | select(."銘柄名" == "${fil1}") | .balance]`,
     );
   }
   // async filterDetMfExt(fil1: string): Promise<number[][]> {
@@ -131,22 +131,26 @@ class Gtmt extends Command {
     balance: number[],
     ac: string,
     colorStr: string,
-    xs: string[]
+    xs: string[],
   ): Promise<WebAPICallResult> {
-    const label = balance.map((x, idx) =>
-      idx === balance.length - 1 ? x : ""
-    );
+    const label = balance.map((x, idx) => idx === balance.length - 1 ? x : "");
     const c = new Color(`#${colorStr}`);
     const b = c.lighten(0.3).hex().replace("#", "");
     const web = new WebClient(this.slackToken);
     const imgUrl = encodeURI(
-      `https://image-charts.com/chart?cht=lc&chxt=x,y&chxl=0:|${xs.join(
-        "|"
-      )}&chd=a:${balance.join(
-        ","
-      )}&chs=999x999&chco=${colorStr}&chdl=${ac}&chl=${label.join(
-        "|"
-      )}&chm=s,${colorStr},0,-1,13.0|B,${b},0,0,0&chls=5`
+      `https://image-charts.com/chart?cht=lc&chxt=x,y&chxl=0:|${
+        xs.join(
+          "|",
+        )
+      }&chd=a:${
+        balance.join(
+          ",",
+        )
+      }&chs=999x999&chco=${colorStr}&chdl=${ac}&chl=${
+        label.join(
+          "|",
+        )
+      }&chm=s,${colorStr},0,-1,13.0|B,${b},0,0,0&chls=5`,
     );
     // if (!this.bitlyToken) {
     //   this.log("Set BITLY_TOKEN env !");
@@ -276,7 +280,7 @@ class Gtmt extends Command {
 
       await this.page.type(
         'input[name="mfid_user[email]"]',
-        this.moneyforwardEmail
+        this.moneyforwardEmail,
       );
       await Promise.all([
         this.page.waitForNavigation(),
@@ -285,7 +289,7 @@ class Gtmt extends Command {
 
       await this.page.type(
         'input[name="mfid_user[password]"]',
-        this.moneyforwardPass
+        this.moneyforwardPass,
       );
 
       // await this.page.screenshot({
@@ -316,7 +320,7 @@ class Gtmt extends Command {
         (els) => {
           console.log(els);
           els.map((el) => (el as HTMLElement).click());
-        }
+        },
       );
     } finally {
       this.log("update end");
@@ -367,7 +371,7 @@ class Gtmt extends Command {
             const kind = row.cells[0].innerText.trim();
             const balance = row.cells[1].innerText.trim();
             return { 種類: kind, 残高: balance };
-          })
+          }),
       );
       const assets = _.map(assetsOut, (asset) => {
         return { ...asset, balance: this.toNormalNumber(asset.残高) };
@@ -377,7 +381,7 @@ class Gtmt extends Command {
       // portfolio_det_depo
       const detDepoOut = await this.page.$eval(
         "section#portfolio_det_depo table",
-        this.getTableData
+        this.getTableData,
       );
       const detDepo = _.map(detDepoOut, (depo: object) => {
         if (Object.hasOwnProperty.call(depo, "残高")) {
@@ -393,7 +397,7 @@ class Gtmt extends Command {
       // portfolio_det_eq
       const detEqOut = await this.page.$eval(
         "section#portfolio_det_eq table",
-        this.getTableData
+        this.getTableData,
       );
       const detEq = _.map(detEqOut, (eq: object) => {
         if (Object.hasOwnProperty.call(eq, "評価額")) {
@@ -409,7 +413,7 @@ class Gtmt extends Command {
       // portfolio_det_mf
       const detMfOut = await this.page.$eval(
         "section#portfolio_det_mf table",
-        this.getTableData
+        this.getTableData,
       );
       const detMf = _.map(detMfOut, (mf: object) => {
         if (Object.hasOwnProperty.call(mf, "評価額")) {
@@ -423,32 +427,32 @@ class Gtmt extends Command {
       console.log({ detMf });
 
       // portfolio_det_fx
-      const detFxOut = await this.page.$eval(
-        "section#portfolio_det_fx table",
-        this.getTableData
-      );
-      const detFx = _.map(detFxOut, (fx: object) => {
-        if (Object.hasOwnProperty.call(fx, "残高")) {
-          return {
-            ...fx,
-            balance: this.toNormalNumber((fx as { 残高: string }).残高),
-          };
-        }
-        return { ...fx, balance: 0 };
-      });
-      console.log({ detFx });
+      // const detFxOut = await this.page.$eval(
+      //   "section#portfolio_det_fx table",
+      //   this.getTableData
+      // );
+      // const detFx = _.map(detFxOut, (fx: object) => {
+      //   if (Object.hasOwnProperty.call(fx, "残高")) {
+      //     return {
+      //       ...fx,
+      //       balance: this.toNormalNumber((fx as { 残高: string }).残高),
+      //     };
+      //   }
+      //   return { ...fx, balance: 0 };
+      // });
+      // console.log({ detFx });
 
       // portfolio_det_po
       const detPoOut = await this.page.$eval(
         "section#portfolio_det_po table",
-        this.getTableData
+        this.getTableData,
       );
       const detPo = _.map(detPoOut, (po: object) => {
         if (Object.hasOwnProperty.call(po, "現在の価値")) {
           return {
             ...po,
             balance: this.toNormalNumber(
-              (po as { 現在の価値: string }).現在の価値
+              (po as { 現在の価値: string }).現在の価値,
             ),
           };
         }
@@ -463,7 +467,7 @@ class Gtmt extends Command {
         detDepo,
         detEq,
         detMf,
-        detFx,
+        // detFx,
         detPo,
       };
 
@@ -487,7 +491,8 @@ class Gtmt extends Command {
       // }
 
       rimraf.sync("/tmp/portfolio");
-      const remote = `https://${this.portfolioUser}:${this.portfolioPass}@${this.portfolioRepo}`;
+      const remote =
+        `https://${this.portfolioUser}:${this.portfolioPass}@${this.portfolioRepo}`;
 
       const gitClone: SimpleGit = gitP("/tmp");
       await gitClone.clone(remote);
@@ -499,7 +504,7 @@ class Gtmt extends Command {
 
       if (fs.existsSync(this.portfolioPath)) {
         const portfolio = JSON.parse(
-          fs.readFileSync(this.portfolioPath, "utf-8")
+          fs.readFileSync(this.portfolioPath, "utf-8"),
         );
         const newPortfolio = _.concat(portfolio, this.portfolio);
         fs.writeFileSync(this.portfolioPath, JSON.stringify(newPortfolio));
@@ -509,7 +514,7 @@ class Gtmt extends Command {
 
       await git.add(".");
       await git.commit(
-        moment().tz("Asia/Tokyo").format("YYYY/MM/DD HH:mm:ss.SSS")
+        moment().tz("Asia/Tokyo").format("YYYY/MM/DD HH:mm:ss.SSS"),
       );
       await git.push();
 
@@ -522,16 +527,16 @@ class Gtmt extends Command {
       // );
       // const dates = times.map((x: string) => x.substr(8, 2));
       const dates = JSON.parse(
-        await jq.run("[.[].label]", this.groupByDayPath, { input: "file" })
+        await jq.run("[.[].label]", this.groupByDayPath, { input: "file" }),
       );
 
       const sbi1 = await this.filterDetDepo(
         "代表口座 - 円普通",
-        "住信SBIネット銀行"
+        "住信SBIネット銀行",
       );
       const sbi2 = await this.filterDetDepo(
         "SBIハイブリッド預金",
-        "住信SBIネット銀行"
+        "住信SBIネット銀行",
       );
       let sbi = _.zipWith(sbi1, sbi2, (a, b) => a + b);
       console.log({ sbi });
@@ -555,13 +560,13 @@ class Gtmt extends Command {
 
       const coincheck1 = await this.filterDetDepo(
         "ビットコイン残高",
-        "coincheck"
+        "coincheck",
       );
       const coincheck2 = await this.filterDetDepo("Ripple残高", "coincheck");
       const coincheck3 = await this.filterDetDepo("Litecoin残高", "coincheck");
       const coincheck4 = await this.filterDetDepo(
         "ビットコイン キャッシュ残高",
-        "coincheck"
+        "coincheck",
       );
       const coincheck5 = await this.filterDetDepo("円残高", "coincheck");
       let coincheck = _.zipWith(
@@ -570,7 +575,7 @@ class Gtmt extends Command {
         coincheck3,
         coincheck4,
         coincheck5,
-        (a, b, c, d, e) => a + b + c + d + e
+        (a, b, c, d, e) => a + b + c + d + e,
       );
       console.log({ coincheck });
       coincheck = this.adjustLength(coincheck, dates);
@@ -592,7 +597,7 @@ class Gtmt extends Command {
 
       const bitFlyer1 = await this.filterDetDepo(
         "ビットコイン残高",
-        "bitFlyer"
+        "bitFlyer",
       );
       const bitFlyer2 = await this.filterDetDepo("Mona残高", "bitFlyer");
       const bitFlyer3 = await this.filterDetDepo("円残高", "bitFlyer");
@@ -600,7 +605,7 @@ class Gtmt extends Command {
         bitFlyer1,
         bitFlyer2,
         bitFlyer3,
-        (a, b, c) => a + b + c
+        (a, b, c) => a + b + c,
       );
       console.log({ bitFlyer });
       bitFlyer = this.adjustLength(bitFlyer, dates);
@@ -609,7 +614,7 @@ class Gtmt extends Command {
       const liquid1 = await this.filterDetDepo("円残高", "Liquid by Quoine");
       const liquid2 = await this.filterDetDepo(
         "ビットコイン残高",
-        "Liquid by Quoine"
+        "Liquid by Quoine",
       );
       let liquid = _.zipWith(liquid1, liquid2, (a, b) => a + b);
       console.log({ liquid });
@@ -631,7 +636,7 @@ class Gtmt extends Command {
       await this.postToSlack(oneOpen, "One-MHAM", "2F4F4F", dates);
 
       let worldIndex = await this.filterDetMf(
-        "三井住友TAM-世界経済インデックスファンド"
+        "三井住友TAM-世界経済インデックスファンド",
       );
       console.log({ worldIndex });
       worldIndex = this.adjustLength(worldIndex, dates);
@@ -639,12 +644,12 @@ class Gtmt extends Command {
         worldIndex,
         "世界経済インデックス",
         "800000",
-        dates
+        dates,
       );
 
       let wealthNavi1 = await this.filterDetDepo(
         "現金",
-        "WealthNavi（ウェルスナビ）"
+        "WealthNavi（ウェルスナビ）",
       );
       wealthNavi1 = this.adjustLength(wealthNavi1, dates);
       let wealthNavi2 = await this.filterDetMf("米国株(VTI)");
@@ -668,7 +673,7 @@ class Gtmt extends Command {
         wealthNavi5,
         wealthNavi6,
         wealthNavi7,
-        (a, b, c, d, e, f, g) => a + b + c + d + e + f + g
+        (a, b, c, d, e, f, g) => a + b + c + d + e + f + g,
       );
       await this.postToSlack(wealthNavi, "WealthNavi", "1688C5", dates);
 
@@ -700,51 +705,59 @@ class Gtmt extends Command {
         bitFlyer,
         wealthNavi,
         (x1, x2, x3, x4, x5, x6, x7, x8, x9, x10) =>
-          x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9 + x10
+          x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9 + x10,
       );
       console.log({ total });
 
       const label = total.map((x, idx) => (idx === total.length - 1 ? x : ""));
 
       const imgUrl = encodeURI(
-        `https://image-charts.com/chart?cht=bvs&chxt=x,y&chxl=0:|${dates.join(
-          "|"
-        )}&chd=a:${[
-          sbi,
-          smbc,
-          ufj,
-          yucho,
-          aeon,
-          oneOpen,
-          worldIndex,
-          coincheck,
-          bitFlyer,
-          wealthNavi,
-        ]
-          .map((x) => x.join(","))
-          .join("|")}&chs=999x999&chco=${[
-          "1E90FF",
-          "32CD32",
-          "DC143C",
-          "228B22",
-          "FF00FF",
-          "2F4F4F",
-          "800000",
-          "00FFFF",
-          "8B008B",
-          "1688C5",
-        ].join(",")}&chdl=${[
-          "住信SBIネット銀行",
-          "三井住友銀行",
-          "三菱UFJ銀行",
-          "ゆうちょ銀行",
-          "イオン",
-          "One-MHAM",
-          "世界経済インデックス",
-          "coincheck",
-          "bitFlyer",
-          "WealthNavi",
-        ].join("|")}&chl=${label.join("|")}`
+        `https://image-charts.com/chart?cht=bvs&chxt=x,y&chxl=0:|${
+          dates.join(
+            "|",
+          )
+        }&chd=a:${
+          [
+            sbi,
+            smbc,
+            ufj,
+            yucho,
+            aeon,
+            oneOpen,
+            worldIndex,
+            coincheck,
+            bitFlyer,
+            wealthNavi,
+          ]
+            .map((x) => x.join(","))
+            .join("|")
+        }&chs=999x999&chco=${
+          [
+            "1E90FF",
+            "32CD32",
+            "DC143C",
+            "228B22",
+            "FF00FF",
+            "2F4F4F",
+            "800000",
+            "00FFFF",
+            "8B008B",
+            "1688C5",
+          ].join(",")
+        }&chdl=${
+          [
+            "住信SBIネット銀行",
+            "三井住友銀行",
+            "三菱UFJ銀行",
+            "ゆうちょ銀行",
+            "イオン",
+            "One-MHAM",
+            "世界経済インデックス",
+            "coincheck",
+            "bitFlyer",
+            "WealthNavi",
+          ].join("|")
+        }&chl=${label.join("|")}`,
       );
 
       console.log({ imgUrl });
